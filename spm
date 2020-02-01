@@ -1,0 +1,32 @@
+#!/bin/bash
+
+sources="$PWD/sources"
+build="$PWD/build"
+install="$PWD/install"
+packages="$PWD/packages"
+jobs=$(nproc)
+
+mkdir -p $sources $build $install $packages
+
+name="$1"
+
+source "recipes/${name}/package.sh"
+
+tag="${name}-${version}"
+srcdir="${sources}/${tag}"
+builddir="${build}/${tag}"
+installdir="${install}/${tag}"
+
+cd $sources
+getsrc
+
+mkdir -p $builddir
+cd $builddir
+configure
+build
+
+mkdir -p $installdir
+install
+
+cd $packages
+tar -C $installdir -cJf ${tag}.spm.tar.xz
