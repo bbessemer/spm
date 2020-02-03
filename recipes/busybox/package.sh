@@ -9,7 +9,7 @@ getsrc() {
 configure() {
     make \
         KBUILD_SRC="${srcdir}" \
-        -f ${srcdir}/Makefile
+        -f ${srcdir}/Makefile \
         defconfig
 }
 

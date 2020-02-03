@@ -29,4 +29,4 @@ mkdir -p $installdir
 install
 
 cd $packages
-tar -C $installdir -cJf ${tag}.spm.tar.xz
+tar -C $installdir -cJf ${tag}.spm.tar.xz .
