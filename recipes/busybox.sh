@@ -1,9 +1,10 @@
 #!/bin/bash
 
 version="1.31.1"
+builddeps="gcc make"
 
 getsrc() {
-    wget "https://busybox.net/downloads/busybox-${version}.tar.bz2" -O - | tar -xvj
+    wget "https://busybox.net/downloads/busybox-${version}.tar.bz2" -O - | tar -xj
 }
 
 configure() {

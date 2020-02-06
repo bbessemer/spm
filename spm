@@ -10,7 +10,7 @@ mkdir -p $sources $build $install $packages
 
 name="$1"
 
-source "recipes/${name}/package.sh"
+source "recipes/${name}.sh"
 
 tag="${name}-${version}"
 srcdir="${sources}/${tag}"
