@@ -1,7 +1,7 @@
 #!/bin/bash
 
 case $1 in
-    build)
+    build|install|remove)
         ;;
     *)
         echo "$0: error: unrecognized subcommand $1" >&2
@@ -10,4 +10,5 @@ esac
 
 export SPM_ROOT=$(dirname $(readlink -f $0))
 export SPM_TREE=$SPM_ROOT
+export SPM_DATA="/var/lib/spm"
 exec $SPM_ROOT/bin/$1.sh "${@:2}"

@@ -39,15 +39,15 @@ case $1 in
         jobs="$2" exec $0 ${@:3}
         ;;
     --jobs=*)
-        jobs=$(echo $1 | cut -c 8-) exec $0 ${@:2}
+        jobs=$(echo $1 | cut -d '=' -f 2-) exec $0 ${@:2}
         ;;
 
-    # Maximum number of parallel jobs (use only if > nCPUs)
+    # Maximum number of parallel jobs (use only if < nCPUs)
     -J|--max-jobs)
         max_jobs="$2" exec $0 ${@:3}
         ;;
     --max-jobs=*)
-        max_jobs=$(echo $1 | cut -c 8-) exec $0 ${@:2}
+        max_jobs=$(echo $1 | cut -d '=' -f 2-) exec $0 ${@:2}
         ;;
 
     # Print output of subcommands to stdout
@@ -66,15 +66,14 @@ case $1 in
         ;;
 
     -*)
-        echo "sp: warning: unrecognized flag $1"
-        exec $0 ${@:2}
+        passthru_flags="$passthru_flags $1" exec $0 ${@:2}
         ;;
 esac
 
 [ ! $jobs ] && jobs=$(nproc)
 [ $max_jobs ] && [ $jobs -gt $max_jobs ] && jobs=$max_jobs
 
-do_build() {
+do_build() (
     name="$1"
 
     source "$SPM_TREE/recipes/${name}.sh"
@@ -85,7 +84,7 @@ do_build() {
     fi
 
     if [ ! $ignore_builddeps ] && [ ! -z "$builddeps" ]; then
-        $SPM_ROOT/install.sh $builddeps || exit $?
+        $SPM_ROOT/bin/install.sh $builddeps || exit $?
     fi
 
     srcdir="${sources}/${tag}"
@@ -153,7 +152,7 @@ do_build() {
 
     echo "Removing temporary directories ..."
     rm -rf ${srcdir} ${builddir} ${stagedir}
-}
+)
 
 if [ ${recursive} ]; then
     source "$SPM_ROOT/lib/dependencies.sh"
@@ -181,5 +180,5 @@ echo -n "Is this okay? [y/N] "
 done
 
 for pkg in $all_packages; do
-    do_build $pkg
+    do_build $pkg || exit $?
 done
