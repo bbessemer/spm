@@ -7,7 +7,7 @@ srcurl="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 
 configure() {
     ${srcdir}/configure \
-        --prefix=${installdir} \
+        --prefix=${stagedir}/usr \
         --disable-bootstrap \
         x86_64-linux-gnu
 }
@@ -16,6 +16,6 @@ build() {
     make -j${jobs}
 }
 
-install() {
+stage() {
     make install
 }

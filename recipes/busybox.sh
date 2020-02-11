@@ -15,6 +15,6 @@ build() {
     make -j${jobs}
 }
 
-install() {
-    make CONFIG_PREFIX=${installdir} install
+stage() {
+    make CONFIG_PREFIX=${stagedir} install
 }

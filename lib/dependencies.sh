@@ -5,7 +5,7 @@ collect_deps() {
         if ! echo $alldeps | grep -oF "$pkg" > /dev/null; then
             if source "$SPM_TREE/recipes/${pkg}.sh"; then
                 alldeps="$alldeps $pkg"
-                echo $pkg
+                echo -n "$pkg "
                 collect_deps $dependencies
             fi
         fi
