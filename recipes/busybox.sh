@@ -2,9 +2,10 @@
 
 version="1.31.1"
 builddeps="gcc make"
+srcurl="https://busybox.net/downloads/busybox-${version}.tar.bz2"
 
 getsrc() {
-    wget "https://busybox.net/downloads/busybox-${version}.tar.bz2" -O - | tar -xj
+    wget ${srcurl} -O - | tar -C ${sources} -xj
 }
 
 configure() {
