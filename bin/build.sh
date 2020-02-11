@@ -10,11 +10,11 @@ fail() {
     exit $1
 }
 
-sources="${SP_ROOT}/sources"
-build="${SP_ROOT}/build"
-install="${SP_ROOT}/install"
-packages="${SP_ROOT}/packages"
-logs="${SP_ROOT}/logs"
+sources="${SPM_TREE}/sources"
+build="${SPM_TREE}/build"
+install="${SPM_TREE}/install"
+packages="${SPM_TREE}/packages"
+logs="${SPM_TREE}/logs"
 
 mkdir -p ${sources} ${build} ${install} ${packages}
 
