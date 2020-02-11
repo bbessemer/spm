@@ -1,5 +1,15 @@
 #!/bin/bash
 
+fail() {
+    if [[ $1 == 130 ]]; then
+        echo "Interrupted by the user; exiting."
+    else
+        echo "sp has encountered a fatal error (subcommand exit status $1)."
+        echo "Please see the files in ${logdir} for more information."
+    fi
+    exit $1
+}
+
 sources="${SP_ROOT}/sources"
 build="${SP_ROOT}/build"
 install="${SP_ROOT}/install"
@@ -45,14 +55,7 @@ case $1 in
 
     # Print output of subcommands to stdout
     -v|--verbose)
-        stdout="&1" exec $0 ${@:2}
-        ;;
-
-    # Build a package and all its dependencies into a single binary tarball
-    # (useful for building an entire system from source)
-    # implies --recursive
-    --vendored)
-        vendored=1 exec $0 ${@:2}
+        stdout="/dev/stdout" exec $0 ${@:2}
         ;;
 
     -*)
@@ -60,25 +63,6 @@ case $1 in
         exec $0 ${@:2}
         ;;
 esac
-
-if [ $vendored ]; then
-    if [ -z "$2" ]; then
-        echo "$0: error: --vendor should be used with a single package argument"
-        exit 2
-    fi
-
-    tag="$1-vendored-$(date +'%Y%m%d')"
-    installdir="${install}/${tag}"
-    recursive=1 $0 $1 || exit $?
-    tar -C ${installdir} -cJf ${packages}/${tag}.sp.tar.xz .
-    exit 0
-fi
-
-if [ ! -z "$2" ]; then
-    for package in "$@"; do
-        $0 ${package}
-    done
-fi
 
 [ ! $jobs ] && jobs=$(nproc)
 [ $max_jobs ] && [ $jobs -gt $max_jobs ] && jobs=${max_jobs}
@@ -105,7 +89,7 @@ if [ -d ${srcdir} ]; then
     rm -rf ${srcdir}
 fi
 echo "Downloading source package from ${srcurl} ..."
-getsrc || exit $?
+getsrc || fail $?
 
 if [ -d ${builddir} ]; then
     echo "Removing existing build directory ${builddir} ..."
@@ -114,9 +98,9 @@ fi
 mkdir -p ${builddir}
 cd ${builddir}
 echo "Configuring ${tag} ..."
-configure 2>&1 | tee ${logdir}/configure.log >${stdout} || exit $?
+configure 2>&1 | tee ${logdir}/configure.log >${stdout} || fail $?
 echo "Building ${tag} ..." 
-build 2>&1 | tee ${logdir}/build.log >${stdout} || exit $?
+build 2>&1 | tee ${logdir}/build.log >${stdout} || fail $?
 
 if [ ! $custom_install ] && [ -d ${installdir} ]; then
     echo "Removing existing install directory ${installdir} ..."
@@ -124,10 +108,18 @@ if [ ! $custom_install ] && [ -d ${installdir} ]; then
 fi
 mkdir -p ${installdir}
 echo "Installing ${tag} into ${installdir}"
-install 2>&1 | tee ${logdir}/install.log >${stdout} || exit $?
+install 2>&1 | tee ${logdir}/install.log >${stdout} || fail $?
 
 if [ ! $custom_install ]; then
     pkgfile="${packages}/${tag}.sp.tar.xz"
     echo "Packaging ${pkgfile} ..."
     tar -C ${installdir} -cJf ${pkgfile} .
 fi
+
+echo "Final build directory size: $(du -s -BK ${builddir} | grep -o '^[0-9]*') KiB"
+echo "Final install directory size: $(du -s -BK ${installdir} | grep -o '^[0-9]*') KiB"
+[ ! -z "${pkgfile}" ] \
+    && echo "Compressed package size: $(du -s -BK ${pkgfile} | grep -o '^[0-9]*') KiB"
+
+echo "Removing temporary directories ..."
+rm -rf ${srcdir} ${builddir} ${installdir}
