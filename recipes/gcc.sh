@@ -5,10 +5,6 @@ builddeps="gcc make gmp mpfr mpc"
 dependencies="binutils"
 srcurl="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 
-getsrc() {
-    wget ${srcurl} -O - | tar -C ${sources} -xJ
-}
-
 configure() {
     ${srcdir}/configure \
         --prefix=${installdir} \
