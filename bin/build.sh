@@ -60,6 +60,11 @@ case $1 in
         redownload=1 exec $0 ${@:2}
         ;;
 
+    # Don't prompt the user for confirmation
+    -y|--yes|--noninteractive)
+        noninteractive=1 exec $0 ${@:2}
+        ;;
+
     -*)
         echo "sp: warning: unrecognized flag $1"
         exec $0 ${@:2}
@@ -158,13 +163,22 @@ else
 fi
 
 echo "Going to build: $all_packages"
-echo -n "Is this okay? [Y/n] "
-read -n 1 okay
-echo
-if [[ $okay == "n" ]]; then
-    echo "User refused permission; aborting."
-    exit 1
-fi
+while [ ! $noninteractive ]; do
+echo -n "Is this okay? [y/N] "
+    read -n 1 okay
+    echo
+    case $okay in
+        n|N|"")
+            echo "User refused permission; aborting."
+            exit 1
+            ;;
+        y|Y)
+            break
+            ;;
+        *)
+            echo "Please enter 'y' or 'n'."
+    esac
+done
 
 for pkg in $all_packages; do
     do_build $pkg
