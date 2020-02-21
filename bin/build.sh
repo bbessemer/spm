@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 fail() {
     if [[ $1 == 130 ]]; then
@@ -74,6 +74,8 @@ esac
 [ $max_jobs ] && [ $jobs -gt $max_jobs ] && jobs=$max_jobs
 
 do_build() (
+    set -e
+
     name="$1"
 
     source "$SPM_TREE/recipes/${name}.sh"
@@ -84,7 +86,7 @@ do_build() (
     fi
 
     if [ ! $ignore_builddeps ] && [ ! -z "$builddeps" ]; then
-        $SPM_ROOT/bin/install.sh $builddeps || exit $?
+        $SPM_ROOT/bin/install.sh $builddeps
     fi
 
     srcdir="${sources}/${tag}"
@@ -101,7 +103,7 @@ do_build() (
     fi
     if [[ $(type -t getsrc) == "function" ]]; then
         echo "Downloading source from ${srcurl} ..."
-        getsrc || fail $?
+        getsrc
     elif [ ! -z "${srcurl}" ]; then
         srcpkg="${sources}/$(basename ${srcurl})"
 
@@ -111,7 +113,7 @@ do_build() (
         fi
         if [ ! -f ${srcpkg} ]; then
             echo "Downloading source package from ${srcurl} ..."
-            wget -q --show-progress ${srcurl} -P ${sources} || fail $?
+            wget -q --show-progress ${srcurl} -P ${sources}
         fi
         echo "Extracting ${srcpkg} ..."
         tar -C ${sources} -xaf ${srcpkg}
@@ -124,9 +126,9 @@ do_build() (
     mkdir -p ${builddir}
     cd ${builddir}
     echo "Configuring ${tag} ..."
-    configure 2>&1 | tee ${logdir}/configure.log >${stdout} || fail $?
+    configure 2>&1 | tee ${logdir}/configure.log >${stdout}
     echo "Building ${tag} ..." 
-    build 2>&1 | tee ${logdir}/build.log >${stdout} || fail $?
+    build 2>&1 | tee ${logdir}/build.log >${stdout}
 
     if [ -d ${stagedir} ]; then
         echo "Removing existing stage directory ${stagedir} ..."
@@ -134,7 +136,7 @@ do_build() (
     fi
     mkdir -p ${stagedir}
     echo "Staging ${tag} into ${stagedir}"
-    stage 2>&1 | tee ${logdir}/stage.log >${stdout} || fail $?
+    stage 2>&1 | tee ${logdir}/stage.log >${stdout}
 
     pkgfile="${packages}/${tag}.spm.tar.xz"
     echo "Packaging $pkgfile ..."
@@ -142,7 +144,6 @@ do_build() (
         --owner=root \
         --group=root \
         --numeric-owner \
-        --xattrs-include='*.*' \
         -cJpf $pkgfile .
 
     echo "Final build directory size: $(du -s -BK ${builddir} | grep -o '^[0-9]*') KiB"

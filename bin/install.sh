@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 case $1 in
     # Build dependencies as well
@@ -33,6 +33,8 @@ esac
 [ -z "$install_root" ] && install_root="/"
 
 do_install() (
+    set -e
+
     name="$1"
 
     source "$SPM_ROOT/recipes/${name}.sh"
@@ -57,9 +59,7 @@ do_install() (
 
     echo "Installing ${tag} into ${install_root} ..."
     mkdir -p "${install_root}/${infodir}"
-    fileslist=$(tar -C $install_root -xvJpf $pkgfile \
-                --numeric-owner \
-                --xattrs-include='*.*')
+    fileslist=$(tar -C $install_root -xvJpf $pkgfile --numeric-owner)
     true > "${install_root}/${fileslist_path}"
     for file in $fileslist; do
         if [ -f "${install_root}/${file}" ]; then

@@ -9,6 +9,7 @@ configure() {
     ${srcdir}/configure \
         --prefix=${stagedir}/usr \
         --disable-bootstrap \
+        --disable-multilib \
         x86_64-linux-gnu
 }
 

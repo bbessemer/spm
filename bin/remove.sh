@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 case $1 in
     # Use directory as install root instead of /
@@ -28,6 +28,8 @@ esac
 [ -z "$install_root" ] && install_root="/"
 
 do_remove() (
+    set -e
+
     name="$1"
 
     if ! tag=$(grep -hFm 1 "$name" $install_root/$SPM_DATA/packages.list); then
